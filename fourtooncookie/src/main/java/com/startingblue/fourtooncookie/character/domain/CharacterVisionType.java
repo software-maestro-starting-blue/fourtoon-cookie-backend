@@ -4,6 +4,7 @@ public enum CharacterVisionType {
 
     DALL_E_3,
     STABLE_DIFFUSION,
-    MIDJOURNEY
+    MIDJOURNEY,
+    STABILITY_AI
 
 }
