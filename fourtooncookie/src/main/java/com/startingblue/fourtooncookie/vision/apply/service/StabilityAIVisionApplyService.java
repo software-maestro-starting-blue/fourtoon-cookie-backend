@@ -2,6 +2,7 @@ package com.startingblue.fourtooncookie.vision.apply.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.startingblue.fourtooncookie.character.domain.Character;
 import com.startingblue.fourtooncookie.character.domain.CharacterVisionType;
 import com.startingblue.fourtooncookie.vision.reply.dto.VisionReplyEvent;
@@ -28,6 +29,8 @@ public class StabilityAIVisionApplyService implements VisionApplyService {
     private String API_KEY;
 
     private static final String STABILITY_AI_URL = "https://api.stability.ai/v2beta/stable-image/generate/ultra";
+
+    private static final String MODEL_TYPE = "sd3-medium";
 
     private static final RestTemplate restTemplate = new RestTemplate();
 
@@ -87,7 +90,18 @@ public class StabilityAIVisionApplyService implements VisionApplyService {
     }
 
     private String getRequestBody(String prompt, Integer seed) {
-        return null; //TODO: 프롬프트를 이용하여 requestBody 생성
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            ObjectNode rootNode = objectMapper.createObjectNode();
+            rootNode.put("prompt", prompt);
+            rootNode.put("model", MODEL_TYPE);
+            rootNode.put("seed", seed);
+
+            return objectMapper.writeValueAsString(rootNode);
+        } catch (Exception e) {
+            throw new RuntimeException("Stability AI 요청 데이터 생성 중 오류 발생", e);
+        }
     }
 
     @Override
