@@ -1,12 +1,16 @@
 package com.startingblue.fourtooncookie.vision.apply.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.startingblue.fourtooncookie.character.domain.Character;
 import com.startingblue.fourtooncookie.character.domain.CharacterVisionType;
 import com.startingblue.fourtooncookie.vision.reply.dto.VisionReplyEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -22,6 +26,8 @@ public class StabilityAIVisionApplyService implements VisionApplyService {
 
     @Value("${stability.api.key}")
     private String API_KEY;
+
+    private final String STABILITY_AI_URL = "https://api.stability.ai/v2beta/stable-image/generate/ultra";
 
     private final RestTemplate restTemplate = new RestTemplate();
 
@@ -49,7 +55,27 @@ public class StabilityAIVisionApplyService implements VisionApplyService {
     }
 
     private String getImageOfBase64DataFromStabilityAI(String prompt, Integer seed) {
-        return null; //TODO: AI 서버에 요청하여 이미지(base64) 받아오기
+        String responseBody = getResponseBodyFromStabilityAI(prompt, seed);
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            JsonNode rootNode = objectMapper.readTree(responseBody);
+            return rootNode.get("image").asText();
+        } catch (Exception e) {
+            throw new RuntimeException("Stability AI 응답 데이터 파싱 중 오류 발생", e);
+        }
+    }
+
+    private String getResponseBodyFromStabilityAI(String prompt, Integer seed) {
+        HttpHeaders headers = getHeader();
+        String requestBody = getRequestBody(prompt, seed);
+        HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
+        try {
+            return restTemplate
+                    .exchange(STABILITY_AI_URL, HttpMethod.POST, requestEntity, String.class)
+                    .getBody();
+        } catch (Exception e) {
+            throw new RuntimeException("Stability AI 통신 중 오류 발생", e);
+        }
     }
 
     private HttpHeaders getHeader() {
