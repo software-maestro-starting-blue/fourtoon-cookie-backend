@@ -28,7 +28,7 @@ public class StabilityAIVisionApplyService implements VisionApplyService {
     @Value("${stability.api.key}")
     private String API_KEY;
 
-    private static final String STABILITY_AI_URL = "https://api.stability.ai/v2beta/stable-image/generate/ultra";
+    private static final String STABILITY_AI_URL = "https://api.stability.ai/v2beta/stable-image/generate/sd3";
 
     private static final String MODEL_TYPE = "sd3-medium";
 
