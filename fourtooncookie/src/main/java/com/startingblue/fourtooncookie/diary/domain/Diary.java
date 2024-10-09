@@ -63,11 +63,13 @@ public final class Diary extends BaseEntity {
     }
 
     public void update(String content,
-                       Character character,
-                       DiaryStatus status) {
+                       Character character) {
         this.content = content;
         this.character = character;
-        this.status = status;
+        this.status = DiaryStatus.IN_PROGRESS;
+        paintingImageGenerationStatuses = new ArrayList<>(
+                Collections.nCopies(paintingImageGenerationStatuses.size(), DiaryPaintingImageGenerationStatus.GENERATING)
+        );
         validate();
     }
 
@@ -79,9 +81,12 @@ public final class Diary extends BaseEntity {
         this.paintingImageUrls = new ArrayList<>(paintingImageUrls);
     }
 
-    public void updatePaintingImageGenerationStatus(int index, DiaryPaintingImageGenerationStatus status) {
-        paintingImageGenerationStatuses.set(index, status);
+    public void updatePaintingImageGenerationStatus(int index, boolean isImageGenerationSuccess) {
+        paintingImageGenerationStatuses = new ArrayList<>(paintingImageGenerationStatuses);
+        paintingImageGenerationStatuses.set(index,
+                isImageGenerationSuccess ? DiaryPaintingImageGenerationStatus.SUCCESS : DiaryPaintingImageGenerationStatus.FAILURE);
     }
+
 
     public void updateDiaryStatus(DiaryStatus status) {
         this.status = status;
@@ -89,6 +94,11 @@ public final class Diary extends BaseEntity {
     
     public boolean isOwner(UUID memberId) {
         return this.memberId.equals(memberId);
+    }
+
+    public boolean isImageGenerationComplete() {
+        return paintingImageGenerationStatuses.stream()
+                .allMatch(DiaryPaintingImageGenerationStatus.SUCCESS::equals);
     }
 
     private void validate() {
@@ -126,7 +136,6 @@ public final class Diary extends BaseEntity {
                 Objects.equals(getCreatedDateTime(), diary.getCreatedDateTime()) &&
                 Objects.equals(getModifiedDateTime(), diary.getModifiedDateTime());
     }
-
 
     @Override
     public int hashCode() {

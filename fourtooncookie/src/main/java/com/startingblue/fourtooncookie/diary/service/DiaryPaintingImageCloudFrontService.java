@@ -15,6 +15,9 @@ public class DiaryPaintingImageCloudFrontService {
 
     private static final String IMAGE_PNG_FORMAT = "png";
 
+    @Value("${aws.cloudfront.distribution.id}")
+    private String distributionId;
+
     @Value("${aws.cloudfront.domain.name}")
     private String cloudFrontDomainName;
 
@@ -27,11 +30,19 @@ public class DiaryPaintingImageCloudFrontService {
     private final CloudFrontService cloudFrontService;
 
     public URL generateSignedUrl(Long diaryId, int imageGridPosition) {
-        String path = getPath(diaryId, imageGridPosition, IMAGE_PNG_FORMAT);
+        String path = getFilePath(diaryId, imageGridPosition, IMAGE_PNG_FORMAT);
         return cloudFrontService.generateSignedUrl(path, cloudFrontDomainName, keyPairId, privateKeyPath);
     }
 
-    private String getPath(Long diaryId, int imageGridPosition, String imageFormat) {
+    private String getFilePath(Long diaryId, int imageGridPosition, String imageFormat) {
         return String.format("%s/%s.%s", diaryId, imageGridPosition, imageFormat);
+    }
+
+    public void invalidateCache(Long diaryId) {
+        cloudFrontService.invalidateCache(distributionId, getFolderPath(diaryId));
+    }
+
+    private String getFolderPath(Long diaryId) {
+        return String.format("%s/", diaryId);
     }
 }

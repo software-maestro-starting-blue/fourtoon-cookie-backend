@@ -4,6 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.services.cloudfront.CloudFrontClient;
+import software.amazon.awssdk.services.cloudfront.model.CreateInvalidationRequest;
+import software.amazon.awssdk.services.cloudfront.model.InvalidationBatch;
 
 import java.io.IOException;
 import java.net.URL;
@@ -17,6 +20,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
+
+import static software.amazon.awssdk.services.cloudfront.model.Paths.builder;
 
 @Service
 @RequiredArgsConstructor
@@ -40,6 +45,26 @@ public class CloudFrontService {
             return new URL(signedUrl);
         } catch (Exception e) {
             throw new RuntimeException("Signed URL 생성 중 오류 발생", e);
+        }
+    }
+
+    public void invalidateCache(String distributionId, String filePath) {
+        try (CloudFrontClient cloudFrontClient = CloudFrontClient.builder().build()) {
+            builder().build();
+            InvalidationBatch invalidationBatch = InvalidationBatch.builder()
+                    .paths(builder().items(filePath).quantity(1).build())
+                    .callerReference(String.valueOf(System.currentTimeMillis())) // 고유 참조값
+                    .build();
+
+            CreateInvalidationRequest invalidationRequest = CreateInvalidationRequest.builder()
+                    .distributionId(distributionId)
+                    .invalidationBatch(invalidationBatch)
+                    .build();
+
+            cloudFrontClient.createInvalidation(invalidationRequest);
+            log.info("CloudFront 캐시 무효화 완료: {}", filePath);
+        } catch (Exception e) {
+            log.error("CloudFront 캐시 무효화 중 오류 발생: {}", e.getMessage());
         }
     }
 

@@ -36,7 +36,6 @@ public class DiaryLambdaService {
             DiaryImageGenerationLambdaPayload diaryImageGenerationLambdaPayload = buildPayload(diary, character);
             String serializePayload = serializePayload(diaryImageGenerationLambdaPayload);
             lambdaService.invokeLambda(lambdaClient, IMAGE_GENERATION_FUNCTION_NAME, INVOCATION_TYPE, serializePayload);
-            status = DiaryStatus.COMPLETED;
         } catch (Exception e) {
             log.error("Lambda 호출 중 오류 발생: {}", e.getMessage());
             status = DiaryStatus.FAILED;

@@ -6,6 +6,7 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,7 +35,7 @@ public class DiaryPaintingImageGenerationStatusListConverter implements Attribut
     @Override
     public List<DiaryPaintingImageGenerationStatus> convertToEntityAttribute(String dbData) {
         if (isDBColumnEmpty(dbData)) {
-            return List.of();
+            return new ArrayList<>();
         }
 
         try {

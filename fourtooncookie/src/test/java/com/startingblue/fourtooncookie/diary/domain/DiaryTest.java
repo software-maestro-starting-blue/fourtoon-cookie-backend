@@ -183,7 +183,7 @@ public class DiaryTest {
                 .build();
 
         String newContent = "New content";
-        diary.update(newContent, character, DiaryStatus.IN_PROGRESS);
+        diary.update(newContent, character);
 
         assertThat(diary.getContent()).isEqualTo(newContent);
         assertThat(diary.getCharacter()).isEqualTo(character);
@@ -201,7 +201,7 @@ public class DiaryTest {
                 .build();
 
         assertThatThrownBy(() -> {
-            diary.update("", character, DiaryStatus.IN_PROGRESS);
+            diary.update("", character);
         }).isInstanceOf(ConstraintViolationException.class)
                 .hasMessageContaining("일기 내용은 필수 입니다.");
     }
@@ -218,7 +218,7 @@ public class DiaryTest {
                 .build();
 
         assertThatThrownBy(() -> {
-            diary.update("Updated content", null, DiaryStatus.IN_PROGRESS);
+            diary.update("Updated content", null);
         }).isInstanceOf(ConstraintViolationException.class)
                 .hasMessageContaining("일기에 그려질 캐릭터는 필수 입니다.");
     }

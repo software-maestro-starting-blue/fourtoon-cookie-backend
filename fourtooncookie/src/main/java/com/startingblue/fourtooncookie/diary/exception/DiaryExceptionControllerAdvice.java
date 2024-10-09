@@ -15,35 +15,49 @@ public class DiaryExceptionControllerAdvice {
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public String handleConstraintViolationException(ConstraintViolationException e) {
-        log.error(e.getMessage(), e);
+        log.error("Constraint violation: {}", e.getMessage(), e);
         return "Diary constraint violation";
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleEntityNotFoundException(EntityNotFoundException e) {
-        log.error(e.getMessage(), e);
+        log.error("Entity not found: {}", e.getMessage(), e);
         return "Diary not found";
     }
 
     @ExceptionHandler(DiaryNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public String handleDiaryNotFoundException(DiaryNotFoundException e) {
-        log.error(e.getMessage(), e);
+        log.error("Diary not found: {}", e.getMessage(), e);
         return "Diary not found";
     }
 
     @ExceptionHandler(DiaryDuplicateException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public String handleDiaryDuplicateException(DiaryDuplicateException e) {
-        log.error(e.getMessage(), e);
+        log.error("Diary duplication: {}", e.getMessage(), e);
         return "Diary duplicate";
     }
 
     @ExceptionHandler(DiaryLambdaInvocationException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public String handleDiaryLambdaInvocationException(DiaryLambdaInvocationException e) {
-        log.error(e.getMessage(), e);
-        return "Lambda 호출 중 오류가 발생했습니다.";
+        log.error("Lambda invocation error: {}", e.getMessage(), e);
+        return "Lambda invocation error";
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public String handleIllegalArgumentException(IllegalArgumentException e) {
+        log.error("Invalid argument: {}", e.getMessage());
+        return "Invalid argument provided";
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public String handleException(Exception e) {
+        log.error("Unexpected error: {}", e.getMessage());
+        return "An unexpected error occurred";
     }
 }

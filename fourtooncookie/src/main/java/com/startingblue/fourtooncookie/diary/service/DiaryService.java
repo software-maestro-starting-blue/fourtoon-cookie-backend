@@ -21,12 +21,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static com.startingblue.fourtooncookie.diary.listener.DiarySQSMessageListener.*;
 
 @Service
 @RequiredArgsConstructor
@@ -120,7 +121,8 @@ public class DiaryService {
     public void updateDiary(Long diaryId, DiaryUpdateRequest request) {
         Diary existedDiary = readById(diaryId);
         Character character = characterService.readById(request.characterId());
-        existedDiary.update(request.content(), character, DiaryStatus.IN_PROGRESS);
+        existedDiary.update(request.content(), character);
+        diaryPaintingImageCloudFrontService.invalidateCache(diaryId);
         diaryImageGenerationLambdaInvoker.invokeDiaryImageGenerationLambda(existedDiary, character);
     }
 
@@ -151,5 +153,22 @@ public class DiaryService {
   
     public void deleteDiaryByMemberId(UUID memberId) {
         diaryRepository.deleteByMemberId(memberId);
+    }
+
+    @Transactional
+    public boolean existsById(Long diaryId) {
+        if (diaryId == null) return false;
+        return diaryRepository.existsById(diaryId);
+    }
+
+    @Transactional
+    public void processImageGenerationResponse(DiaryImageResponseMessage response) {
+        Diary diary = diaryRepository.findById(response.diaryId()).get();
+
+        diary.updatePaintingImageGenerationStatus(response.gridPosition(), response.isSuccess());
+
+        if (diary.isImageGenerationComplete()) {
+            diary.updateDiaryStatus(DiaryStatus.COMPLETED);
+        }
     }
 }
